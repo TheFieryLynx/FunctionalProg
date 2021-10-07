@@ -58,7 +58,7 @@
 
 ; замена лица во фразе			
 (define (change-person phrase)
-        (many-replace-v2 '((am are)
+        (many-replace-v3 '((am are)
                         (are am)
                         (i you)
                         (me you)
@@ -108,6 +108,18 @@
                )
         )
     )
+  )
+)
+
+;1-3
+(define (many-replace-v3 replacement-pairs lst)
+  (map (lambda (x)(let ((pat-rep (assoc x replacement-pairs)))
+                    (if pat-rep
+                        (cadr pat-rep)
+                        x
+                    )
+                  )
+       ) lst
   )
 )
  
