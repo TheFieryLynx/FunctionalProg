@@ -1,0 +1,18 @@
+> (visit-doctor 'ivan)
+Hello, ivan!
+(what seems to be the trouble?)
+**(everyone hates me)
+(you feel that everyone hates you)
+**(whenever i enter a room no one will look me in the eye)
+(please go on)
+**(they laugh at me behind my back)
+(you seem to think they laugh at you behind your back)
+**(they get together and talk about how they hate me)
+(please continue)
+**(even my mother hates me)
+( that even your mother hates you)
+**(even when i was a baby she said i was ugly and stupid)
+(many people have the same sorts of feelings)
+**(she hit me all the time)
+(please continue)
+...

@@ -1,5 +1,5 @@
-; "Доктор". Осень 2021
 #lang scheme/base
+; "Доктор". Осень 2021
 ; В учебных целях используется базовая версия Scheme
 
 (require racket/vector)
@@ -43,7 +43,9 @@
         (append (pick-random-vector '#((you seem to think that)
                                        (you feel that)
                                        (why do you believe that)
-                                       (why do you say that))
+                                       (why do you say that)
+                                       
+                                      )
                 )
                 (change-person user-response)
         )
@@ -56,41 +58,59 @@
 
 ; замена лица во фразе			
 (define (change-person phrase)
-        (many-replace '((am are)
+        (many-replace-v2 '((am are)
                         (are am)
                         (i you)
                         (me you)
                         (mine yours)
                         (my your)
-						(myself yourself)
+			(myself yourself)
                         (you i)
                         (your my)
                         (yours mine)
-						(yourself myself)
-						(we you)
-						(us you)
-						(our your)
-						(ours yours)
-						(ourselves yourselves)
-						(yourselves ourselves)
-						(shall will))
+			(yourself myself)
+			(we you)
+			(us you)
+			(our your)
+			(ours yours)
+			(ourselves yourselves)
+			(yourselves ourselves)
+			(shall will))
                       phrase)
  )
   
 ; осуществление всех замен в списке lst по ассоциативному списку replacement-pairs
 (define (many-replace replacement-pairs lst)
         (cond ((null? lst) lst)
-              (else (let ((pat-rep (assoc (car lst) replacement-pairs))) ; Доктор ищет первый элемент списка в ассоциативном списке замен
-                      (cons (if pat-rep (cadr pat-rep) ; если поиск был удачен, то в начало ответа Доктор пишет замену
-                                (car lst) ; иначе в начале ответа помещается прежнее начало списка без изменений
+              (else (let ((pat-rep (assoc (car lst) replacement-pairs)))   ; Доктор ищет первый элемент списка в ассоциативном списке замен
+                      (cons (if pat-rep
+                                (cadr pat-rep)                             ; если поиск был удачен, то в начало ответа Доктор пишет замену
+                                (car lst)                                  ; иначе в начале ответа помещается прежнее начало списка без изменений
                             )
-                            (many-replace replacement-pairs (cdr lst)) ; рекурсивно производятся замены в хвосте списка
-                        )
-                     )
-               )
-         )
-  )
+                            (many-replace replacement-pairs (cdr lst))     ; рекурсивно производятся замены в хвосте списка
+                       )
+                    )
+              )
+        )
+)
 
+;1-2
+(define (many-replace-v2 replacement-pairs lst)
+  (let loop ((lst lst) (res '()))
+    (if (null? lst)
+        (reverse res)
+        (let ((pat-rep (assoc (car lst) replacement-pairs)))
+               (loop (cdr lst) (cons (if pat-rep
+                                         (cadr pat-rep)
+                                         (car lst)
+                                      )
+                                res)
+               )
+        )
+    )
+  )
+)
+ 
 ; 2й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
 (define (hedge)
        (pick-random-vector '#((please go on)
