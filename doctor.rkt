@@ -44,12 +44,15 @@
                                        (you feel that)
                                        (why do you believe that)
                                        (why do you say that)
-                                       
+                                       ;1-1
+                                       (how often do  you feel that)
+                                       (what makes you think that)
+                                       (it appears that)
                                       )
                 )
                 (change-person user-response)
         )
- )
+)
 
 ; случайный выбор одного из элементов вектора vctr
 (define (pick-random-vector vctr)
@@ -128,6 +131,11 @@
        (pick-random-vector '#((please go on)
                               (many people have the same sorts of feelings)
                               (many of my patients have told me the same thing)
-                              (please continue))
+                              (please continue)
+                              ;1-1
+                              (go ahead)
+                              (do not let me interrupt you)
+                              (it is ok)
+                             )
          )
 )
