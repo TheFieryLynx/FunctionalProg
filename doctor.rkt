@@ -10,7 +10,8 @@
 (define (visit-doctor name)
   (printf "Hello, ~a!\n" name)
   (print '(what seems to be the trouble?))
-  (doctor-driver-loop name)
+  ;(doctor-driver-loop name)
+  (doctor-driver-loop-v2 name)
 )
 
 ; цикл диалога Доктора с пациентом
@@ -31,12 +32,49 @@
     )
 )
 
+;1-4
+(define (doctor-driver-loop-v2 name)
+  (let loop ((rep-history #())(is-begin #t))
+    (newline)
+    (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
+    (let ((user-response (read)))
+      (cond 
+	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
+             (printf "Goodbye, ~a!\n" name)
+             (print '(see you next week))
+            )
+            (else (print (reply-v2 user-response is-begin rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+                  (loop (vector-append (vector user-response) rep-history) #f)
+            )
+       )
+    )
+  )
+)
+
 ; генерация ответной реплики по user-response -- реплике от пользователя 
 (define (reply user-response)
       (case (random 2) ; с равной вероятностью выбирается один из двух способов построения ответа
           ((0) (qualifier-answer user-response)) ; 1й способ
           ((1) (hedge))  ; 2й способ
       )
+)
+
+; 1-4
+; генерация ответной реплики по user-response -- реплике от пользователя 
+(define (reply-v2 user-response is-begin rep-history)
+  (if is-begin
+      (reply user-response)
+      (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
+          ((0) (qualifier-answer user-response)) ; 1й способ
+          ((1) (hedge))  ; 2й способ
+          ((2) (history-answer rep-history))
+      )
+  )
+)
+
+; 1-4
+(define (history-answer rep-history)
+  (append `(earlier you said that) (change-person (pick-random-vector rep-history)))
 )
 			
 ; 1й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату нового начала
