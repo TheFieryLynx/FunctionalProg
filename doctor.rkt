@@ -48,6 +48,7 @@
                                        (how often do  you feel that)
                                        (what makes you think that)
                                        (it appears that)
+                                       (what is the cause)
                                       )
                 )
                 (change-person user-response)
