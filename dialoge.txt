@@ -1,4 +1,4 @@
-> (visit-doctor 'ivan)
+(visit-doctor 'ivan)
 Hello, ivan!
 (what seems to be the trouble?)
 

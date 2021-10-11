@@ -34,7 +34,7 @@
 
 ;1-4
 (define (doctor-driver-loop-v2 name)
-  (let loop ((rep-history #())(is-begin #t))
+  (let loop ((rep-history #()))
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read)))
@@ -43,8 +43,8 @@
              (printf "Goodbye, ~a!\n" name)
              (print '(see you next week))
             )
-            (else (print (reply-v2 user-response is-begin rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (loop (vector-append (vector user-response) rep-history) #f)
+            (else (print (reply-v2 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+                  (loop (vector-append (vector user-response) rep-history))
             )
        )
     )
@@ -61,8 +61,8 @@
 
 ; 1-4
 ; генерация ответной реплики по user-response -- реплике от пользователя 
-(define (reply-v2 user-response is-begin rep-history)
-  (if is-begin
+(define (reply-v2 user-response rep-history)
+  (if (vector-empty? rep-history)
       (reply user-response)
       (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
           ((0) (qualifier-answer user-response)) ; 1й способ
@@ -177,5 +177,5 @@
                               (do not let me interrupt you)
                               (it is ok)
                              )
-         )
+        )
 )
