@@ -14,6 +14,33 @@
   (doctor-driver-loop-v2 name)
 )
 
+(define (visit-doctor-v2 stop-word patients-number)
+  (let loop ((patients-count patients-number))
+    (if (= patients-count 0)
+        `(time to go home)
+        (let ((patient-name (ask-patient-name)))
+          (cond ((equal? patient-name stop-word) `(time to go home))
+                (else (printf "Hello, ~a!\n" patient-name)
+                      (print '(what seems to be the trouble?))
+                      (doctor-driver-loop-v2 patient-name)
+                      (loop (- patients-count 1))
+                )
+          )
+        )
+    )
+  )
+)
+
+; 2-5
+(define (ask-patient-name)
+ (begin
+  (println '(next!))
+  (println '(who are you?))
+  (print '**)
+  (car (read))
+ ) 
+)
+
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
 (define (doctor-driver-loop name)
@@ -42,6 +69,7 @@
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
              (print '(see you next week))
+             (newline)
             )
             (else (print (reply-v2 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (loop (vector-append (vector user-response) rep-history))

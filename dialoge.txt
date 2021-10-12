@@ -30,5 +30,39 @@ Hello, ivan!
 (she hit me all the time)
 (please continue)
 
+--------------------------------------------------
 
+(visit-doctor-v2 'suppertime 3)
+(next!)
+(who are you?) 
+
+(hal abelson)
+(hello, hal)
+(what seems to be the trouble?)
+
+(everyone taking 6.001 hates me)
+(why do you say everyone taking 6.001 hates you)
 ...
+
+(goodbye)
+(goodbye, hal)
+(see you next week)
+(next!)
+(who are you?)
+
+
+(eric grimson)
+(hello, eric)
+(what seems to be the trouble?)
+...
+
+
+(goodbye)
+(goodbye, eric)
+(see you next week)
+(next!)
+(who are you?)
+
+
+(suppertime)
+(time to go home)
