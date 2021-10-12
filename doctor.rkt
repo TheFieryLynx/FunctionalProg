@@ -71,7 +71,7 @@
              (print '(see you next week))
              (newline)
             )
-            (else (print (reply-v2 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+            (else (print (reply-v3 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (loop (vector-append (vector user-response) rep-history))
             )
        )
@@ -88,7 +88,7 @@
 )
 
 ; 1-4
-; генерация ответной реплики по user-response -- реплике от пользователя 
+; генерация ответной реплики по user-response -- реплике от пользователя
 (define (reply-v2 user-response rep-history)
   (if (vector-empty? rep-history)
       (reply user-response)
@@ -96,6 +96,20 @@
           ((0) (qualifier-answer user-response)) ; 1й способ
           ((1) (hedge))  ; 2й способ
           ((2) (history-answer rep-history))
+      )
+  )
+)
+
+; 2-6
+; генерация ответной реплики по user-response -- реплике от пользователя
+(define (reply-v3 user-response rep-history)
+  (if (or (not(check-for-keywords? user-response)) (vector-empty? rep-history))
+      (reply-v2 user-response rep-history)
+      (case (random 4) ; с равной вероятностью выбирается один из двух способов построения ответа
+          ((0) (qualifier-answer user-response)) ; 1й способ
+          ((1) (hedge))  ; 2й способ
+          ((2) (history-answer rep-history))
+          ((3) (keywords-answer user-response)) ; 2-6
       )
   )
 )
@@ -207,3 +221,94 @@
                              )
         )
 )
+
+; 2-6 Структура данных, хранящая группы ключевых слов и привязанных к ним шаблонов для составления ответных реплик
+(define keywords_structure '#(
+     ( ; начало данных 1й группы
+       (depressed suicide exams university) ; список ключевых слов 1й группы
+       (                                    ; список шаблонов для составления ответных реплик 1й группы 
+	  (when you feel depressed, go out for ice cream)
+          (depression is a disease that can be treated)
+          (do you like studying at the university?)
+          (how do you tolerate exams emotionally?)
+       )
+     ) ; завершение данных 1й группы
+     ( ; начало данных 2й группы ...
+       (mother father parents brother sister uncle aunt grandma grandpa)
+       (
+	  (tell me more about your *, i want to know all about your *)
+          (why do you feel that way about your *?)
+          (do you love your *?)
+          (how close are you to your *?)
+       )
+     )
+     (
+       (university scheme lections study seminars seminar lection)
+       (
+	  (your education is important)
+	  (how much time do you spend on your studies ?)
+          (do you like *?)
+          (do you have problems with *?)
+       )
+     )
+     (
+       (cat cats dog dogs animals parrot)
+       (
+          (do you like your *?)
+          (how often do you go for a walk with your *?)
+       )
+     )
+     (
+       (meal food breakfast dinner supper lunch)
+       (
+          (do you eat regularly?)
+          (what is your normal portion for *?)
+       )
+     )
+  )
+)
+
+; 2-6 проверка наличия ключевых слов в фразе пациента
+(define (check-for-keywords? user-response)
+  (let ((all-keywords (foldl (lambda (x y)(append (car x) y)) '() (vector->list keywords_structure)))) 
+    (let loop ((phrase user-response))
+      (cond ((memq (car phrase) all-keywords) #t)
+            ((equal? (cdr phrase) '()) #f)
+            (else (loop (cdr phrase)))
+      )
+    )
+  )
+)
+
+; 2-6 запуск конфигурации списка возможных ответов
+(define (get-doctor-responses user-response)
+  (foldl configure-doctor-responses '() user-response)
+)
+
+
+
+; 2-6 ищет слово среди ключевых слов и если находит, то формирует фразы должным образом и добавляет их в список
+(define (configure-doctor-responses word doctor-responses-list)
+  (append (foldl (lambda (x y) (append (if (memq word (car x))
+                                           (map (lambda(z)(many-replace-v3 (list(list '* word)) z)) (cadr x))
+                                           '()
+                                       ) y
+                               )
+                 ) '() (vector->list keywords_structure)
+          ) doctor-responses-list
+  )
+)
+
+(define (keywords-answer user-response)
+  (let ((phrases-list (get-doctor-responses user-response)))
+      (list-ref phrases-list (random (length phrases-list)))
+  )
+)
+
+
+
+
+
+
+
+
