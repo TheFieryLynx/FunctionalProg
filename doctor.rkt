@@ -71,7 +71,7 @@
              (print '(see you next week))
              (newline)
             )
-            (else (print (reply-v3 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+            (else (print (reply-v4 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (loop (vector-append (vector user-response) rep-history))
             )
        )
@@ -114,6 +114,30 @@
   )
 )
 
+; 3-7
+(define (reply-strategies user-response rep-history)
+  (list (list 2  (lambda()(hedge)))
+        (list 5  (lambda()(qualifier-answer user-response)))
+        (list 9  (if (vector-empty? rep-history) #f (lambda () (history-answer rep-history))))
+        (list 14 (if (not(check-for-keywords? user-response)) #f (lambda () (keywords-answer user-response)))) 
+  )
+)
+
+; 3-7
+; генерация ответной реплики по user-response -- реплике от пользователя
+(define (reply-v4 user-response rep-history)
+  (let ((strategy-list (filter (lambda (x)(cadr x)) (reply-strategies user-response rep-history))))
+    (let ((max-weight (foldl (lambda(x y)(if(> (car x) y) (car x) y)) 0 strategy-list)))
+      (let loop ((rand (random max-weight)) (current-strategy (car strategy-list)) (other-strategies (cdr strategy-list)))
+        (if (< rand (car current-strategy))
+            ((cadr current-strategy))
+            (loop rand (car other-strategies) (cdr other-strategies))
+        )
+      )
+    )
+  )
+)
+
 ; 1-4
 (define (history-answer rep-history)
   (append `(earlier you said that) (change-person (pick-random-vector rep-history)))
@@ -138,7 +162,7 @@
 
 ; случайный выбор одного из элементов вектора vctr
 (define (pick-random-vector vctr)
-  (vector-ref vctr (random (vector-length vctr)))
+  (vector-ref vctr (random(vector-length vctr)))
 )
 
 ; замена лица во фразе			
@@ -236,10 +260,10 @@
      ( ; начало данных 2й группы ...
        (mother father parents brother sister uncle aunt grandma grandpa)
        (
-	  (tell me more about your *, i want to know all about your *)
-          (why do you feel that way about your *?)
-          (do you love your *?)
-          (how close are you to your *?)
+	  (tell me more about your * , i want to know all about your *)
+          (why do you feel that way about your * ?)
+          (do you love your * ?)
+          (how close are you to your * ?)
        )
      )
      (
@@ -247,22 +271,22 @@
        (
 	  (your education is important)
 	  (how much time do you spend on your studies ?)
-          (do you like *?)
-          (do you have problems with *?)
+          (do you like * ?)
+          (do you have problems with * ?)
        )
      )
      (
        (cat cats dog dogs animals parrot)
        (
-          (do you like your *?)
-          (how often do you go for a walk with your *?)
+          (do you like your * ?)
+          (how often do you go for a walk with your * ?)
        )
      )
      (
        (meal food breakfast dinner supper lunch)
        (
           (do you eat regularly?)
-          (what is your normal portion for *?)
+          (what is your normal portion for * ?)
        )
      )
   )
@@ -290,7 +314,7 @@
 ; 2-6 ищет слово среди ключевых слов и если находит, то формирует фразы должным образом и добавляет их в список
 (define (configure-doctor-responses word doctor-responses-list)
   (append (foldl (lambda (x y) (append (if (memq word (car x))
-                                           (map (lambda(z)(many-replace-v3 (list(list '* word)) z)) (cadr x))
+                                           (map (lambda(z)(many-replace-v3 (list(list `* word)) z)) (cadr x))
                                            '()
                                        ) y
                                )
@@ -299,6 +323,7 @@
   )
 )
 
+; 2-6 запуск стратегии с ключевыми словами
 (define (keywords-answer user-response)
   (let ((phrases-list (get-doctor-responses user-response)))
       (list-ref phrases-list (random (length phrases-list)))

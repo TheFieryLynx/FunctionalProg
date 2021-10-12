@@ -63,6 +63,11 @@ Hello, ivan!
 (next!)
 (who are you?)
 
+(if (< rand (car current-strategy))
+            (cadr current-strategy)
+            (loop rand (car other-strategies) (cdr other-strategies))
+        )
+
 
 (suppertime)
 (time to go home)
