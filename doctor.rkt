@@ -71,7 +71,7 @@
              (print '(see you next week))
              (newline)
             )
-            (else (print (reply-v4 user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+            (else (print (reply-v4 reply-strategies user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (loop (vector-append (vector user-response) rep-history))
             )
        )
@@ -115,27 +115,22 @@
 )
 
 ; 3-7
-(define (reply-strategies user-response rep-history)
-  (list (list 2  (lambda()(hedge)))
-        (list 5  (lambda()(qualifier-answer user-response)))
-        (list 9  (if (vector-empty? rep-history) #f (lambda () (history-answer rep-history))))
-        (list 14 (if (not(check-for-keywords? user-response)) #f (lambda () (keywords-answer user-response)))) 
+(define reply-strategies
+  (list (list 2  (lambda(x y) #t)                                 (lambda(x y)(hedge)))
+        (list 5  (lambda(x y) #t)                                 (lambda(x y)(qualifier-answer x)))
+        (list 9  (lambda(x y) (if (vector-empty? y) #f #t))       (lambda(x y)(history-answer y)))
+        (list 14 (lambda(x y) (if (check-for-keywords? x) #t #f)) (lambda(x y)(keywords-answer x))) 
   )
 )
 
 ; 3-7
 ; генерация ответной реплики по user-response -- реплике от пользователя
-(define (reply-v4 user-response rep-history)
-  (let ((strategy-list (filter (lambda (x)(cadr x)) (reply-strategies user-response rep-history))))
+(define (reply-v4 reply-strategies user-response rep-history)
+  (let ((strategy-list (filter (lambda (x)((cadr x) user-response rep-history)) reply-strategies)))
     (let ((weight (foldl (lambda(x y)(+ (car x) y)) 0 strategy-list)))
       (let loop ((rand (random weight)) (p (caar strategy-list)) (current-strategy (car strategy-list)) (other-strategies (cdr strategy-list)))
-        (print weight)
-        (newline)
-        (print p)
-        (newline)
-        (newline)
         (if (<= rand p)
-            ((cadr current-strategy))
+            ((caddr current-strategy) user-response rep-history)
             (loop rand (+ p (caar other-strategies)) (car other-strategies) (cdr other-strategies))
         )
       )
