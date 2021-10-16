@@ -295,20 +295,18 @@
     (ormap (lambda (x) (memq x all-keywords)) user-response)
 )
 
-; 2-6 запуск конфигурации списка возможных ответов
+; 2-6 конфигурация ответа доктора если есть ключевые слова
 (define (get-doctor-responses user-response)
-  (foldl configure-doctor-responses '() user-response)
-)
-
-; 2-6 ищет слово среди ключевых слов и если находит, то формирует фразы должным образом и добавляет их в список
-(define (configure-doctor-responses word doctor-responses-list)
-  (append (foldl (lambda (x y) (append (if (memq word (car x))
-                                           (map (lambda(z)(many-replace-v3 (list(list `* word)) z)) (cadr x))
+  (let ((filtered-user-response (foldl (lambda(x y)(if(memq x all-keywords) (cons x y) y)) '() user-response)))
+    (let ((rand-word (list-ref filtered-user-response (random (length filtered-user-response)))))
+       (foldl (lambda (x y) (append (if (memq rand-word (car x))
+                                           (map (lambda(z)(many-replace-v3 (list(list `* rand-word)) z)) (cadr x))
                                            '()
-                                       ) y
-                               )
-                 ) '() (vector->list keywords_structure)
-          ) doctor-responses-list
+                                    ) y
+                            )
+              ) '() keywords_structure_list
+        )
+    )
   )
 )
 

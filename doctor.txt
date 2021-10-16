@@ -90,27 +90,22 @@
 ; 1-4
 ; генерация ответной реплики по user-response -- реплике от пользователя
 (define (reply-v2 user-response rep-history)
-  (if (vector-empty? rep-history)
-      (reply user-response)
-      (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
-          ((0) (qualifier-answer user-response)) ; 1й способ
-          ((1) (hedge))  ; 2й способ
-          ((2) (history-answer rep-history))
-      )
+  (case (random (if (vector-empty? rep-history) 2 3))
+    ((0) (qualifier-answer user-response)) ; 1й способ
+    ((1) (hedge))  ; 2й способ
+    ((2) (history-answer rep-history))
   )
 )
 
 ; 2-6
 ; генерация ответной реплики по user-response -- реплике от пользователя
 (define (reply-v3 user-response rep-history)
-  (if (or (not(check-for-keywords? user-response)) (vector-empty? rep-history))
-      (reply-v2 user-response rep-history)
-      (case (random 4) ; с равной вероятностью выбирается один из двух способов построения ответа
-          ((0) (qualifier-answer user-response)) ; 1й способ
-          ((1) (hedge))  ; 2й способ
-          ((2) (history-answer rep-history))
-          ((3) (keywords-answer user-response)) ; 2-6
-      )
+  (case (random (if (vector-empty? rep-history) 1 0) (if (check-for-keywords? user-response) 4 3)) ; с равной вероятностью выбирается один из двух способов построения ответа
+    ((1) (qualifier-answer user-response)) ; 1й способ  (всегда)
+    ((2) (hedge))  ; 2й способ                          (всегда)
+          
+    ((0) (history-answer rep-history))     ;            (not(vector-empty? rep-history))
+    ((3) (keywords-answer user-response))  ; 2-6        (check-for-keywords? user-response)
   )
 )
 
@@ -292,34 +287,26 @@
   )
 )
 
+(define keywords_structure_list (vector->list keywords_structure))
+(define all-keywords (foldl (lambda (x y)(foldl (lambda(z w)(if(memq z w) w (cons z w))) y (car x))) '() keywords_structure_list)); y - конечный список, (car x) - список ключевых слов группы
+
 ; 2-6 проверка наличия ключевых слов в фразе пациента
 (define (check-for-keywords? user-response)
-  (let ((all-keywords (foldl (lambda (x y)(append (car x) y)) '() (vector->list keywords_structure)))) 
-    (let loop ((phrase user-response))
-      (cond ((memq (car phrase) all-keywords) #t)
-            ((equal? (cdr phrase) '()) #f)
-            (else (loop (cdr phrase)))
-      )
-    )
-  )
+    (ormap (lambda (x) (memq x all-keywords)) user-response)
 )
 
-; 2-6 запуск конфигурации списка возможных ответов
+; 2-6 конфигурация ответа доктора если есть ключевые слова
 (define (get-doctor-responses user-response)
-  (foldl configure-doctor-responses '() user-response)
-)
-
-
-
-; 2-6 ищет слово среди ключевых слов и если находит, то формирует фразы должным образом и добавляет их в список
-(define (configure-doctor-responses word doctor-responses-list)
-  (append (foldl (lambda (x y) (append (if (memq word (car x))
-                                           (map (lambda(z)(many-replace-v3 (list(list `* word)) z)) (cadr x))
+  (let ((filtered-user-response (foldl (lambda(x y)(if(memq x all-keywords) (cons x y) y)) '() user-response)))
+    (let ((rand-word (list-ref filtered-user-response (random (length filtered-user-response)))))
+       (foldl (lambda (x y) (append (if (memq rand-word (car x))
+                                           (map (lambda(z)(many-replace-v3 (list(list `* rand-word)) z)) (cadr x))
                                            '()
-                                       ) y
-                               )
-                 ) '() (vector->list keywords_structure)
-          ) doctor-responses-list
+                                    ) y
+                            )
+              ) '() keywords_structure_list
+        )
+    )
   )
 )
 
@@ -329,7 +316,6 @@
       (list-ref phrases-list (random (length phrases-list)))
   )
 )
-
 
 
 
