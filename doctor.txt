@@ -90,22 +90,27 @@
 ; 1-4
 ; генерация ответной реплики по user-response -- реплике от пользователя
 (define (reply-v2 user-response rep-history)
-  (case (random (if (vector-empty? rep-history) 2 3))
-    ((0) (qualifier-answer user-response)) ; 1й способ
-    ((1) (hedge))  ; 2й способ
-    ((2) (history-answer rep-history))
+  (if (vector-empty? rep-history)
+      (reply user-response)
+      (case (random 3) ; с равной вероятностью выбирается один из двух способов построения ответа
+          ((0) (qualifier-answer user-response)) ; 1й способ
+          ((1) (hedge))  ; 2й способ
+          ((2) (history-answer rep-history))
+      )
   )
 )
 
 ; 2-6
 ; генерация ответной реплики по user-response -- реплике от пользователя
 (define (reply-v3 user-response rep-history)
-  (case (random (if (vector-empty? rep-history) 1 0) (if (check-for-keywords? user-response) 4 3)) ; с равной вероятностью выбирается один из двух способов построения ответа
-    ((1) (qualifier-answer user-response)) ; 1й способ  (всегда)
-    ((2) (hedge))  ; 2й способ                          (всегда)
-          
-    ((0) (history-answer rep-history))     ;            (not(vector-empty? rep-history))
-    ((3) (keywords-answer user-response))  ; 2-6        (check-for-keywords? user-response)
+  (if (or (not(check-for-keywords? user-response)) (vector-empty? rep-history))
+      (reply-v2 user-response rep-history)
+      (case (random 4) ; с равной вероятностью выбирается один из двух способов построения ответа
+          ((0) (qualifier-answer user-response)) ; 1й способ
+          ((1) (hedge))  ; 2й способ
+          ((2) (history-answer rep-history))
+          ((3) (keywords-answer user-response)) ; 2-6
+      )
   )
 )
 
@@ -324,6 +329,7 @@
       (list-ref phrases-list (random (length phrases-list)))
   )
 )
+
 
 
 
