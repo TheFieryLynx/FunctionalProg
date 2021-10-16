@@ -287,24 +287,18 @@
   )
 )
 
+(define keywords_structure_list (vector->list keywords_structure))
+(define all-keywords (foldl (lambda (x y)(foldl (lambda(z w)(if(memq z w) w (cons z w))) y (car x))) '() keywords_structure_list)); y - конечный список, (car x) - список ключевых слов группы
+
 ; 2-6 проверка наличия ключевых слов в фразе пациента
 (define (check-for-keywords? user-response)
-  (let ((all-keywords (foldl (lambda (x y)(append (car x) y)) '() (vector->list keywords_structure)))) 
-    (let loop ((phrase user-response))
-      (cond ((memq (car phrase) all-keywords) #t)
-            ((equal? (cdr phrase) '()) #f)
-            (else (loop (cdr phrase)))
-      )
-    )
-  )
+    (ormap (lambda (x) (memq x all-keywords)) user-response)
 )
 
 ; 2-6 запуск конфигурации списка возможных ответов
 (define (get-doctor-responses user-response)
   (foldl configure-doctor-responses '() user-response)
 )
-
-
 
 ; 2-6 ищет слово среди ключевых слов и если находит, то формирует фразы должным образом и добавляет их в список
 (define (configure-doctor-responses word doctor-responses-list)
