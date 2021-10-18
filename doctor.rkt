@@ -126,7 +126,7 @@
       (let loop ((rand (random weight)) (p (caar strategy-list)) (current-strategy (car strategy-list)) (other-strategies (cdr strategy-list)))
         (if (<= rand p)
             ((caddr current-strategy) user-response rep-history)
-            (loop rand (+ p (caar other-strategies)) (car other-strategies) (cdr other-strategies))
+            (loop (- rand p) (caar other-strategies) (car other-strategies) (cdr other-strategies))
         )
       )
     )
@@ -302,7 +302,7 @@
                                            '()
                                 ) y
                         )
-          ) '() keywords_structure_list
+           ) '() keywords_structure_list
    )
 )
 
