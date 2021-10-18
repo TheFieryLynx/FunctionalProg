@@ -296,24 +296,32 @@
 )
 
 ; 2-6 конфигурация ответа доктора если есть ключевые слова
-(define (get-doctor-responses user-response)
-  (let ((filtered-user-response (foldl (lambda(x y)(if(memq x all-keywords) (cons x y) y)) '() user-response)))
-    (let ((rand-word (list-ref filtered-user-response (random (length filtered-user-response)))))
-       (foldl (lambda (x y) (append (if (memq rand-word (car x))
-                                           (map (lambda(z)(many-replace-v3 (list(list `* rand-word)) z)) (cadr x))
+(define (get-doctor-responses rand-word)
+   (foldl (lambda (x y) (append (if (memq rand-word (car x))
+                                           (cadr x)
                                            '()
-                                    ) y
-                            )
-              ) '() keywords_structure_list
-        )
-    )
+                                ) y
+                        )
+          ) '() keywords_structure_list
+   )
+)
+
+; 2-6
+(define (pick-random-lst my-lst)
+  (list-ref 
+    my-lst 
+    (random (length my-lst ))
   )
 )
 
 ; 2-6 запуск стратегии с ключевыми словами
 (define (keywords-answer user-response)
-  (let ((phrases-list (get-doctor-responses user-response)))
-      (list-ref phrases-list (random (length phrases-list)))
+  (let ((filtered-user-response (foldl (lambda(x y)(if(memq x all-keywords) (cons x y) y)) '() user-response)))
+    (let ((rand-word (list-ref filtered-user-response (random (length filtered-user-response)))))
+      (let ((phrases-list (get-doctor-responses rand-word)))
+        (many-replace-v3 (list(list `* rand-word)) (pick-random-lst phrases-list))
+      )
+    )
   )
 )
 
