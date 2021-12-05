@@ -3,16 +3,11 @@
 ; В учебных целях используется базовая версия Scheme
 
 (require racket/vector)
+(require scheme/string)
 ; подключаем функции для работы с векторами
  
 ; основная функция, запускающая "Доктора"
 ; параметр name -- имя пациента
-(define (visit-doctor name)
-  (printf "Hello, ~a!\n" name)
-  (print '(what seems to be the trouble?))
-  ;(doctor-driver-loop name)
-  (doctor-driver-loop-v2 name)
-)
 
 (define (visit-doctor-v2 stop-word patients-number)
   (let loop ((patients-count patients-number))
@@ -37,34 +32,19 @@
   (println '(next!))
   (println '(who are you?))
   (print '**)
-  (car (read))
+  (read-line)
  ) 
 )
 
 ; цикл диалога Доктора с пациентом
 ; параметр name -- имя пациента
-(define (doctor-driver-loop name)
-    (newline)
-    (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
-    (let ((user-response (read)))
-      (cond 
-	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
-             (printf "Goodbye, ~a!\n" name)
-             (print '(see you next week))
-            )
-            (else (print (reply user-response)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
-                  (doctor-driver-loop name)
-            )
-       )
-    )
-)
 
 ;1-4
 (define (doctor-driver-loop-v2 name)
   (let loop ((rep-history #()))
     (newline)
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
-    (let ((user-response (read)))
+    (let ((user-response (read-response (read-line))))
       (cond 
 	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
@@ -79,23 +59,11 @@
   )
 )
 
-; генерация ответной реплики по user-response -- реплике от пользователя 
-(define (reply user-response)
-      (case (random 2) ; с равной вероятностью выбирается один из двух способов построения ответа
-          ((0) (qualifier-answer user-response)) ; 1й способ
-          ((1) (hedge))  ; 2й способ
-      )
-)
-
-; 1-4
-; генерация ответной реплики по user-response -- реплике от пользователя
-(define (reply-v2 user-response rep-history)
-  (case (random (if (vector-empty? rep-history) 2 3))
-    ((0) (qualifier-answer user-response)) ; 1й способ
-    ((1) (hedge))  ; 2й способ
-    ((2) (history-answer rep-history))
-  )
-)
+(define (read-response str)
+   (map (lambda (sent) (filter non-empty-string? (string-split sent #px"\\s*\\b\\s*")))
+        (string-split str #px"\\.|\\?|!")
+    )
+   )
 
 ; 2-6
 ; генерация ответной реплики по user-response -- реплике от пользователя
@@ -324,8 +292,6 @@
     )
   )
 )
-
-
 
 
 
