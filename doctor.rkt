@@ -4,6 +4,7 @@
 
 (require racket/vector)
 (require scheme/string)
+(require racket/format)
 ; подключаем функции для работы с векторами
  
 ; основная функция, запускающая "Доктора"
@@ -12,11 +13,11 @@
 (define (visit-doctor-v2 stop-word patients-number)
   (let loop ((patients-count patients-number))
     (if (= patients-count 0)
-        `(time to go home)
+        (printf "time to go home")
         (let ((patient-name (ask-patient-name)))
-          (cond ((equal? patient-name stop-word) `(time to go home))
+          (cond ((equal? patient-name (~a stop-word)) (printf "time to go home"))
                 (else (printf "Hello, ~a!\n" patient-name)
-                      (print '(what seems to be the trouble?))
+                      (printf "what seems to be the trouble?")
                       (doctor-driver-loop-v2 patient-name)
                       (loop (- patients-count 1))
                 )
@@ -29,10 +30,10 @@
 ; 2-5
 (define (ask-patient-name)
  (begin
-  (println '(next!))
-  (println '(who are you?))
+  (printf "next!\n")
+  (printf "who are you?\n")
   (print '**)
-  (read-line)
+  (car (filter non-empty-string? (string-split (read-line) #px"\\s*\\b\\s*")))
  ) 
 )
 
@@ -46,12 +47,12 @@
     (print '**) ; доктор ждёт ввода реплики пациента, приглашением к которому является **
     (let ((user-response (read-response (read-line))))
       (cond 
-	    ((equal? user-response '(goodbye)) ; реплика '(goodbye) служит для выхода из цикла
+	    ((equal? (car user-response) '("goodbye")) ; реплика '(goodbye) служит для выхода из цикла
              (printf "Goodbye, ~a!\n" name)
-             (print '(see you next week))
+             (printf "see you next week")
              (newline)
             )
-            (else (print (reply-v4 reply-strategies user-response rep-history)) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
+            (else (display (merge-text (reply-v4 reply-strategies user-response rep-history))) ; иначе Доктор генерирует ответ, печатает его и продолжает цикл
                   (loop (vector-append (vector user-response) rep-history))
             )
        )
@@ -59,21 +60,32 @@
   )
 )
 
-(define (read-response str)
-   (map (lambda (sent) (filter non-empty-string? (string-split sent #px"\\s*\\b\\s*")))
-        (string-split str #px"\\.|\\?|!")
-    )
-   )
+(define r_word  #px"\\s*\\b\\s*")
+(define r_sent  #px"\\.|\\?|!")
+(define punс_marks (list "." "," ";" ":" "-" "?" "!"))
 
-; 2-6
-; генерация ответной реплики по user-response -- реплике от пользователя
-(define (reply-v3 user-response rep-history)
-  (case (random (if (vector-empty? rep-history) 1 0) (if (check-for-keywords? user-response) 4 3)) ; с равной вероятностью выбирается один из двух способов построения ответа
-    ((1) (qualifier-answer user-response)) ; 1й способ  (всегда)
-    ((2) (hedge))  ; 2й способ                          (всегда)
-          
-    ((0) (history-answer rep-history))     ;            (not(vector-empty? rep-history))
-    ((3) (keywords-answer user-response))  ; 2-6        (check-for-keywords? user-response)
+(define (read-response str)
+   (map (lambda (x)
+           (filter non-empty-string? (string-split x r_word))
+        )
+        (string-split str r_sent)
+   )
+)
+
+(define (merge-text lst)
+  (let loop ((tmp_lst lst) (res ""))
+    (if (null? tmp_lst)
+        res
+        (loop (cdr tmp_lst) (string-append (if (or
+                                                   (eq? res "")
+                                                   (member (car tmp_lst) punс_marks)
+                                               )
+                                               res
+                                               (string-append res " ")
+                                           ) (car tmp_lst)
+                            )
+        )
+    )
   )
 )
 
@@ -103,23 +115,23 @@
 
 ; 1-4
 (define (history-answer rep-history)
-  (append `(earlier you said that) (change-person (pick-random-vector rep-history)))
+  (cons "earlier you said that" (change-person (car (pick-random-vector rep-history))))
 )
 			
 ; 1й способ генерации ответной реплики -- замена лица в реплике пользователя и приписывание к результату нового начала
 (define (qualifier-answer user-response)
-        (append (pick-random-vector '#((you seem to think that)
-                                       (you feel that)
-                                       (why do you believe that)
-                                       (why do you say that)
+        (append (pick-random-vector '#(("you seem to think that")
+                                       ("you feel that")
+                                       ("why do you believe that")
+                                       ("why do you say that")
                                        ;1-1
-                                       (how often do  you feel that)
-                                       (what makes you think that)
-                                       (it appears that)
-                                       (what is the cause)
+                                       ("how often do  you feel that")
+                                       ("what makes you think that")
+                                       ("it appears that")
+                                       ("what is the cause")
                                       )
                 )
-                (change-person user-response)
+                (change-person (car user-response))
         )
 )
 
@@ -130,57 +142,25 @@
 
 ; замена лица во фразе			
 (define (change-person phrase)
-        (many-replace-v3 '((am are)
-                           (are am)
-                           (i you)
-                           (me you)
-                           (mine yours)
-                           (my your)
-                           (myself yourself)
-                           (you i)
-                           (your my)
-                           (yours mine)
-                           (yourself myself)
-                           (we you)
-                           (us you)
-                           (our your)
-                           (ours yours)
-                           (ourselves yourselves)
-                           (yourselves ourselves)
-                           (shall will))
+        (many-replace-v3 '(("am" "are")
+                           ("are" "am")
+                           ("i" "you")
+                           ("me" "you")
+                           ("mine" "yours")
+                           ("my" "your")
+                           ("myself" "yourself")
+                           ("you" "i")
+                           ("your" "my")
+                           ("yours" "mine")
+                           ("yourself" "myself")
+                           ("we" "you")
+                           ("us" "you")
+                           ("our" "your")
+                           ("ours" "yours")
+                           ("ourselves" "yourselves")
+                           ("yourselves" "ourselves")
+                           ("shall" "will"))
                          phrase)
-)
-  
-; осуществление всех замен в списке lst по ассоциативному списку replacement-pairs
-(define (many-replace replacement-pairs lst)
-        (cond ((null? lst) lst)
-              (else (let ((pat-rep (assoc (car lst) replacement-pairs)))   ; Доктор ищет первый элемент списка в ассоциативном списке замен
-                      (cons (if pat-rep
-                                (cadr pat-rep)                             ; если поиск был удачен, то в начало ответа Доктор пишет замену
-                                (car lst)                                  ; иначе в начале ответа помещается прежнее начало списка без изменений
-                            )
-                            (many-replace replacement-pairs (cdr lst))     ; рекурсивно производятся замены в хвосте списка
-                       )
-                    )
-              )
-        )
-)
-
-;1-2
-(define (many-replace-v2 replacement-pairs lst)
-  (let loop ((lst lst) (res '()))
-    (if (null? lst)
-        (reverse res)
-        (let ((pat-rep (assoc (car lst) replacement-pairs)))
-               (loop (cdr lst) (cons (if pat-rep
-                                         (cadr pat-rep)
-                                         (car lst)
-                                      )
-                                res)
-               )
-        )
-    )
-  )
 )
 
 ;1-3
@@ -197,14 +177,14 @@
  
 ; 2й способ генерации ответной реплики -- случайный выбор одной из заготовленных фраз, не связанных с репликой пользователя
 (define (hedge)
-       (pick-random-vector '#((please go on)
-                              (many people have the same sorts of feelings)
-                              (many of my patients have told me the same thing)
-                              (please continue)
+       (pick-random-vector '#(("please go on")
+                              ("many people have the same sorts of feelings")
+                              ("many of my patients have told me the same thing")
+                              ("please continue")
                               ;1-1
-                              (go ahead)
-                              (do not let me interrupt you)
-                              (it is ok)
+                              ("go ahead")
+                              ("do not let me interrupt you")
+                              ("it is ok")
                              )
         )
 )
@@ -212,44 +192,44 @@
 ; 2-6 Структура данных, хранящая группы ключевых слов и привязанных к ним шаблонов для составления ответных реплик
 (define keywords_structure '#(
      ( ; начало данных 1й группы
-       (depressed suicide exams university) ; список ключевых слов 1й группы
+       ("depressed" "suicide" "exams" "university") ; список ключевых слов 1й группы
        (                                    ; список шаблонов для составления ответных реплик 1й группы 
-	  (when you feel depressed, go out for ice cream)
-          (depression is a disease that can be treated)
-          (do you like studying at the university?)
-          (how do you tolerate exams emotionally?)
+	  ("when you feel depressed, go out for ice cream")
+          ("depression is a disease that can be treated")
+          ("do you like studying at the university?")
+          ("how do you tolerate exams emotionally?")
        )
      ) ; завершение данных 1й группы
      ( ; начало данных 2й группы ...
-       (mother father parents brother sister uncle aunt grandma grandpa)
+       ("mother" "father" "parents" "brother" "sister" "uncle" "aunt" "grandma" "grandpa")
        (
-	  (tell me more about your * , i want to know all about your *)
-          (why do you feel that way about your * ?)
-          (do you love your * ?)
-          (how close are you to your * ?)
+	  ("tell me more about your "*" , i want to know all about your" *)
+          ("why do you feel that way about your" * "?")
+          ("do you love your "*" ?")
+          ("how close are you to your "*" ?")
        )
      )
      (
-       (university scheme lections study seminars seminar lection)
+       ("university" "scheme" "lections" "study" "seminars" "seminar" "lection")
        (
-	  (your education is important)
-	  (how much time do you spend on your studies ?)
-          (do you like * ?)
-          (do you have problems with * ?)
+	  ("your education is important")
+	  ("how much time do you spend on your studies ?")
+          ("do you like "*" ?")
+          ("do you have problems with "*" ?")
        )
      )
      (
-       (cat cats dog dogs animals parrot)
+       ("cat" "cats" "dog" "dogs" "animals" "parrot")
        (
-          (do you like your * ?)
-          (how often do you go for a walk with your * ?)
+          ("do you like your "*" ?")
+          ("how often do you go for a walk with your "*" ?")
        )
      )
      (
-       (meal food breakfast dinner supper lunch)
+       ("meal" "food" "breakfast" "dinner" "supper" "lunch")
        (
-          (do you eat regularly?)
-          (what is your normal portion for * ?)
+          ("do you eat regularly?")
+          ("what is your normal portion for "*" ?")
        )
      )
   )
