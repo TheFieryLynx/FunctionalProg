@@ -1,0 +1,21 @@
+#lang racket
+
+(define empty-tree #())
+(define make-tree vector)
+(define (tree-data tree) (vector-ref tree 0))
+(define (tree-left tree) (vector-ref tree 1))
+(define (tree-right tree) (vector-ref tree 2))
+(define (tree-empty? t) (equal? t #()))
+
+(define (print-tree-by-level-desc tree)
+   (map (print(cdr (vector->list tree))) tree)
+   
+)
+
+
+
+(define task print-tree-by-level-desc)
+
+(define a #(1 #() #()))
+(define b #(10 #(21 #() #()) #(22 #() #())))
+(define c #(10 #(21 #(31 #() #()) #()) #(22 #(33 #() #()) #(34 #() #()))))

@@ -1,0 +1,59 @@
+#lang scheme/base
+(require math/number-theory)
+(require racket/vector)
+
+;=================<1>=================
+
+(define (vector-fold-right func init-val vctr)
+  (let loop ((i (- (vector-length vctr) 1))(res init-val))
+    (if (< i 0)
+        res
+        (loop (- i 1)(func i res (vector-ref vctr i)))
+    )
+  )
+)
+
+;=================<2>=================
+
+(define (fun2a n)
+  (reverse
+    (let comp_loop ((it 2))
+      (cond ((> it n) '())   ; если наш итератор превысил наше число то пустой 
+            ((and                                ;
+                  (= 0 (remainder n it))         ;
+                  (not (prime? it))           ; Если наше число делится на итератор и итератор не простой, то 
+             ) (cons it (comp_loop (+ it 1))))   ;
+            (else (comp_loop (+ it 1)))     ; Иначе следующая итерация
+      )
+    )
+  )
+)
+
+; для итеративного варианта достаточно добавить в fun2a переменную списка в котором будет наакапливаться все
+
+(define (fun2b n)
+  (reverse
+    (let comp_loop ((it 2)(result '()))
+      (cond ((> it n) '())   ; если наш итератор превысил наше число то пустой 
+            ((and                                ;
+                  (= 0 (remainder n it))         ;
+                  (not (prime? it))           ; Если наше число делится на итератор и итератор не простой, то 
+             ) (cons it (comp_loop (+ it 1)(cons it result))))   ;
+            (else (comp_loop (+ it 1) result))     ; Иначе следующая итерация
+      )
+    )
+  )
+)
+
+;=================<3>=================
+
+(define (fun3 n)
+  (let loop ((i 0)(mult 1))
+    (if (= i n)
+        mult
+        (loop (+ i 1) (* mult (nth-prime i)))
+    )
+  )
+)
+
+;=================<4>=================

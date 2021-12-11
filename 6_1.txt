@@ -1,0 +1,70 @@
+#lang scheme/base
+(require scheme/mpair)
+
+(define (make-queue)
+  (mcons 'queue (mcons '() '()))
+)
+
+(define (front-queue q)
+  (if (and (queue? q) (not (empty-queue? q)))
+      (mcar (mcar (mcdr q)))
+      "error"
+  )
+)
+
+(define (insert-queue! q e)
+  (let ((pair (mcons e '())))
+    (if (queue? q)
+        (if (empty-queue? q)
+            (begin 
+              (set-mcar! (mcdr q) pair)
+              (set-mcdr! (mcdr q) pair)
+            )
+            (begin
+              (set-mcdr! (mcdr (mcdr q)) pair)
+              (set-mcdr! (mcdr q) pair)
+            )
+        )
+        "error"
+    )
+  )
+)
+
+(define (delete-queue! q)
+  (if (and (queue? q) (not (empty-queue? q)))
+      (set-mcar! (mcdr q) (mcdr (mcar (mcdr q))))
+      "error"
+  )
+)
+
+(define (queue? q)
+  (and (mpair? q) (equal? 'queue (mcar q)))
+)
+
+(define (empty-queue? q)
+  (and (queue? q) (null? (mcar (mcdr q))))
+)
+
+
+
+(define q (make-queue))
+(print q)
+(newline)
+(insert-queue! q 4)
+(print q)(newline)
+(insert-queue! q 5)
+(print q)(newline)
+(insert-queue! q 6)
+(print q)(newline)
+(front-queue q)
+(print q)(newline)
+(delete-queue! q)
+(print q)(newline)
+(delete-queue! q)
+(print q)(newline)
+(delete-queue! q)
+(print q)(newline)
+(delete-queue! q)
+(print q)(newline)
+(insert-queue! q 5)
+(print q)(newline)

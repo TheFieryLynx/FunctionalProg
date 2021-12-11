@@ -1,0 +1,7 @@
+1)  	#lang scheme/base
+	(define (my-if b t e)(cond (b t)
+                           (else e)))
+	Ответ: Да. my-if в данном случае - функция, но работает она как обычный if
+
+2) 	1. (eval '(eval 'a)) => (+ 5 7)
+	2. (eval (eval '(eval 'a))) => 12

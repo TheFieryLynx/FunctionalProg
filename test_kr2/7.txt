@@ -1,0 +1,61 @@
+------------<1>------------
+#lang racket
+
+(define-syntax when
+  (syntax-rules()
+     ((when test)
+       (let ((tmp test))
+         (if tmp
+             tmp
+             #f
+         )
+       )
+     )
+     ((when test e1)
+       (if test
+           e1
+           #f
+       )
+     )
+     ((when test e1 e2 ...)
+         (if test
+             (begin e1 (when #t e2 ...))
+             #f
+         )
+     )
+  )
+)
+------------<2>------------
+#lang racket
+
+(define (reverse1 lst)
+  (foldl (lambda (x y) (cons x y))
+         null
+         lst
+  )
+)
+
+(define (reverse2 lst)
+  (foldr (lambda (x y) (append y (list x)))
+         null
+         lst
+  )
+)
+
+(reverse2 (list 1 2 3))
+------------<3>------------
+(λz. (λx. ((λy. (x z)) ((λy. y y) (λy. y y z))))) a b -> α (y на c)
+(λz. (λx. ((λy. (x z)) ((λc. c c) (λy. y y z))))) a b -> α (y на d)
+(λz. (λx. ((λy. (x z)) ((λc. c c) (λd. d d z))))) a b -> β (подставляем a)
+(λx. ((λy. (x a)) ((λc. c c) (λd. d d a)))) b -> β (подставляем b)
+(λy. (b a)) ((λc. c c) (λd. d d a)) -> β	
+(b a) - ответ
+------------<4>------------
+(define (nthbit n)
+  (let loop ((one_ind 0) (zero_num 2))
+    (cond ((= one_ind n) 1)
+          ((< one_ind n) (loop (+ one_ind zero_num) (+ zero_num 1)))
+          (else 0)
+    )
+  )
+)

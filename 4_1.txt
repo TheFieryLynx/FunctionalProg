@@ -1,0 +1,8 @@
+#lang racket
+
+(define (task-03-2021 lst)
+  (if (empty? lst)
+      0
+      (expt (foldl * 1 (map (lambda(y)(sqrt (foldl + 0 (map (lambda(x)(* x x)) y)))) lst)) (/ 1 (length lst)))
+  )
+)

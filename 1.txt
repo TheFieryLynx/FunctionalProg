@@ -1,0 +1,43 @@
+#lang scheme/base
+
+;------------------------------- a
+
+(define (2n-1!-list-a n)
+  (if (<= n 0)
+      '()
+      (let loop ((i 1) (result 1) (arr '()))
+        (cond ( (and (<= i (+ n 1)) (even? i)) (loop (+ i 1) (* i result) (cons result arr)))
+              ( (and (<= i (+ n 1)) (not(even? i))) (loop (+ i 1) (* i result) arr))
+              (else (reverse arr))   
+              )
+        )
+  )
+)
+
+;-------------------------------b
+
+(define (factorial n)
+  (if (= n 0)
+      1
+      (* n (factorial (- n 1)))
+  )
+)
+
+(define (factlist n)
+  (if (<= n 0)
+      '()
+      (cons (factorial n) (factlist(- n 2)))
+  )
+)
+
+(define (2n-1!-list-b n)
+  (if (even? n)
+      (reverse (factlist(- n 1)))
+      (reverse (factlist n))
+  )
+)
+
+;-------------------------------
+
+(define a 2n-1!-list-a)
+(define b 2n-1!-list-b)

@@ -1,0 +1,34 @@
+#lang racket
+
+(define twos
+  (let loop ((a 1))
+     (stream-cons a (loop (* a 2)))
+  )
+)
+
+(define threes
+  (let loop ((a 1))
+     (stream-cons a (loop (* a 3)))
+  )
+)
+
+(define strm
+  (let loop ((a2 twos)(a3 (stream-rest threes)))
+    (let ((first2 (stream-first a2))(first3 (stream-first a3)))
+      (if (< first2 first3)
+          (stream-cons first2 (loop (stream-rest a2) a3))
+          (stream-cons first3 (loop a2 (stream-rest a3)))
+      )
+    )
+  )
+) 
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,72 @@
+#lang racket
+
+;(define (div_sum n)
+;  (if (= n 1)
+;      1
+;      (let loop ((i 1) (sum 0))
+;        (cond ((= i (+ 1 (quotient n 2))) (+ sum n))
+;              ((= 0 (remainder n i)) (loop (+ i 1) (+ sum i)))
+;              (else (loop (+ i 1) sum))
+;        )
+;      )
+;  )
+;)
+
+(define (div_sum_rec n tmp)
+  (if (= n 1)
+      1
+      (if (= 0 (remainder tmp n))
+          (+ n (div_sum_rec (- n 1) tmp))
+          (div_sum_rec (- n 1) tmp)
+      )
+  )
+)
+
+(define (is-insufficient? n)
+  (< (div_sum_rec n n) (* 2 n))
+)
+
+(define (odd-deficient n)
+  (let loop ((i 1)(num 1))
+    (let ((check (is-insufficient? num)))
+        (cond ((and (= i n) check) num)
+              (check (loop (+ i 1) (+ num 2)))
+              (else (loop i (+ num 2)))
+        )
+    )
+  )
+)
+
+;------------------------------------
+
+(define table (make-hash '()))
+
+(define (memo-is-insufficient? n)
+  (let ((in-table (hash-ref table n #f)))
+    (if in-table
+        in-table
+        (let ((sum (div_sum_rec n n)))
+          (hash-set! table n (< sum (* 2 n)))
+          (< sum (* 2 n))
+        )
+    )
+  )
+)
+
+(define (memo-odd-deficient n)
+  (let loop ((i 1)(num 1))
+    (let ((check (memo-is-insufficient? num)))
+        (cond ((and (= i n) check) num)
+              (check (loop (+ i 1) (+ num 2)))
+              (else (loop i (+ num 2)))
+        )
+    )
+  )
+)
+
+;(memo-odd-deficient 10000)
+;(memo-odd-deficient 9999)
+
+
+
+Мемоизация может дает преимущество при вычислении больших значений подряд, так как часть из них уже была вычислена в процессе ранее.  Однако при этом тратится много памяти для хранения всех значений.
